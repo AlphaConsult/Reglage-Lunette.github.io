@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Réglage de Lunette (MOA / MRAD) — Version Fred</title>
+  <style>
+    :root{ --gap:14px; }
+    *{box-sizing:border-box}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      margin:0 auto; padding:16px; max-width:620px; line-height:1.35;
+      background:#0b0f14; color:#eef2f7;
+    }
+    h1{font-size:1.35rem;margin:0 0 8px}
+    .card{background:#121821;border:1px solid #1e2a38;border-radius:14px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+    label{display:block;margin:8px 0 6px;font-weight:600}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+    input,select,button{width:100%;padding:12px;border-radius:12px;background:#0e141c;color:#eef2f7;border:1px solid #223144;font-size:16px;outline:none}
+    input::placeholder{color:#9fb0c2}
+    select{appearance:none}
+    button{cursor:pointer;font-weight:700;transition:transform .04s ease,background .2s ease;background:#1a7bff;border-color:#1a7bff}
+    button:active{transform:translateY(1px)}
+    .ghost{background:#0e141c;border-color:#223144}
+    .muted{color:#9fb0c2;font-size:.95rem}
+    .tips{font-size:.9rem;color:#a9bdd3}
+    .result{white-space:pre-wrap;background:#0e141c;border:1px solid #223144;border-radius:12px;padding:12px;font-weight:700}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
+    .spacer{height:10px}
+    .chipbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .chip{border:1px solid #223144;background:#0e141c;color:#cfe0f2;padding:6px 10px;border-radius:999px;font-size:.9rem;cursor:pointer}
+    .chip:hover{border-color:#2f435a}
+    .ok{color:#3bd671}
+    .warn{color:#ffcc66}
+    .err{color:#ff6b6b}
+    .section-title{margin-top:12px;margin-bottom:6px;font-size:1.05rem;color:#dbe9fb}
+    .badge{display:inline-block;font-size:.75rem;padding:4px 8px;border-radius:999px;background:#0e141c;border:1px solid #223144;margin-left:8px;color:#b9cbe0}
+    details{border:1px dashed #2a3b52;border-radius:12px;padding:10px 12px;background:#0d131b}
+    details summary{cursor:pointer;font-weight:700}
+    .footer{font-size:.85rem;color:#9fb0c2;margin-top:12px}
+    a{color:#9cc6ff}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .brand .logo{height:40px;width:auto;}
+    .brand span{font-size:1.2rem;font-weight:700;color:#f1f5fa;}
+    .stack{display:flex;flex-direction:column;gap:var(--gap);}
+    .note{font-size:.9rem;color:#b7c7db;margin-top:8px}
+    .small{font-size:.95rem;font-weight:600;color:#cfe0f2}
+  </style>
+</head>
+<body>
+
+  <header class="brand">
+    <span>F. PIEDNOËL - Réglage lunette </span>
+  </header>
+
+  <h1>Réglage lunette de visée de carabine</h1>
+  <div class="card">
+    <div class="section-title">Distance de tir</div>
+    <div class="row">
+      <div>
+        <label for="distance">Distance (m)</label>
+        <input id="distance" type="number" inputmode="decimal" placeholder="Ex. 50" min="1" step="0.1"/>
+        <div class="chipbar">
+          <button class="chip" onclick="setDistance(25)">25 m</button>
+          <button class="chip" onclick="setDistance(50)">50 m</button>
+          <button class="chip" onclick="setDistance(100)">100 m</button>
+          <button class="chip" onclick="setDistance(200)">200 m</button>
+        </div>
+      </div>
+      <div>
+        <label for="type">Type de tourelle</label>
+        <select id="type">
+          <optgroup label="MRAD (mils)">
+            <option value="mrad-0.1" selected>0,1 mil / clic (≈ 1 cm @ 100 m)</option>
+          </optgroup>
+          <optgroup label="MOA">
+            <option value="moa-0.125">1/8 MOA / clic (≈ 0,36–0,40 cm @ 100 m)</option>
+            <option value="moa-0.25">1/4 MOA / clic (≈ 0,7–0,8 cm @ 100 m)</option>
+            <option value="moa-0.5">1/2 MOA / clic (≈ 1,4–1,5 cm @ 100 m)</option>
+            <option value="moa-1">1 MOA / clic (≈ 2,9–3,0 cm @ 100 m)</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-title">Écart mesuré sur la cible (en cm)</div>
+    <div class="stack">
+      <div>
+        <label>Vertical</label>
+        <div class="row">
+          <input id="vert_mag" type="number" inputmode="decimal" placeholder="Ex. 1.0 (cm)" min="0" step="0.01"/>
+          <select id="vert_dir">
+            <option value="haut">Impact au-dessus</option>
+            <option value="bas">Impact en dessous</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>Horizontal</label>
+        <div class="row">
+          <input id="horiz_mag" type="number" inputmode="decimal" placeholder="Ex. 3.0 (cm)" min="0" step="0.01"/>
+          <select id="horiz_dir">
+            <option value="droite">Impact à droite</option>
+            <option value="gauche">Impact à gauche</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      Rappel pratique : <span class="small">on tourne la molette pour déplacer le <em>réticule</em> vers l’impact observé</span>, ce qui fait bouger le <em>point d’impact</em> dans le sens inverse sur la cible.
+    </div>
+
+    <div class="spacer"></div>
+    <button id="calcBtn" onclick="calculer()">Calculer</button>
+    <div class="spacer"></div>
+
+    <div id="result" class="result" aria-live="polite"></div>
+
+    <div class="spacer"></div>
+    <details>
+      <summary>MOA vs MRAD — rappel rapide</summary>
+      <div class="tips">
+        <p><strong>MRAD</strong> : 1 mil = 10 cm à 100 m. Tourelle 0,1 mil : <em>1 clic = 1 cm à 100 m</em> (0,5 cm @ 50 m, 2 cm @ 200 m, etc.).</p>
+        <p><strong>MOA</strong> : 1 MOA ≈ 2,91 cm à 100 m. Avec 1/4 MOA : <em>1 clic ≈ 0,73 cm à 100 m</em> (≈ 0,36 cm @ 50 m, etc.).</p>
+        <p>Astuce : corriger le réticule vers l’impact pour que le point d’impact se déplace en sens inverse.</p>
+      </div>
+    </details>
+
+    <div class="footer">
+      Conseil : tirez un groupement (3 coups), mesurez l’écart moyen, appliquez les clics indiqués, puis vérifiez avec un tir de contrôle.
+    </div>
+  </div>
+
+  <script>
+    function setDistance(m){ document.getElementById('distance').value = m; }
+
+    function parseNumber(id){
+      const v = parseFloat(document.getElementById(id).value);
+      return isFinite(v) ? v : 0;
+    }
+
+    function calculer(){
+      const dist = parseFloat(document.getElementById('distance').value);
+      const typeVal = document.getElementById('type').value;
+
+      const vMag = parseNumber('vert_mag');
+      const vDir = document.getElementById('vert_dir').value; // 'haut' | 'bas'
+      const hMag = parseNumber('horiz_mag');
+      const hDir = document.getElementById('horiz_dir').value; // 'droite' | 'gauche'
+
+      const out = document.getElementById('result');
+
+      if(!dist || dist <= 0){
+        out.innerHTML = "⛔ Veuillez renseigner une distance de tir valide (en mètres).";
+        return;
+      }
+      if(vMag===0 && hMag===0){
+        out.innerHTML = "✅ Aucun écart saisi. Aucune correction nécessaire.";
+        return;
+      }
+
+      // Valeur d'un clic (cm) à la distance
+      let cmParClick;
+      if(typeVal.startsWith('mrad')){
+        const milPerClick = parseFloat(typeVal.split('-')[1]); // ex 0.1
+        const cmParMil = (10 * dist) / 100; // = dist/10
+        cmParClick = cmParMil * milPerClick; // 0.1 -> dist/100
+      } else if(typeVal.startsWith('moa')){
+        const moaPerClick = parseFloat(typeVal.split('-')[1]); // ex 0.25
+        const cmParMOA = 2.91 * (dist / 100); // approximation
+        cmParClick = cmParMOA * moaPerClick;
+      } else {
+        out.innerHTML = "⛔ Type de tourelle non supporté.";
+        return;
+      }
+
+      // Construire des écarts signés (impact relatif au centre, + = haut/droite)
+      const vert = vMag * (vDir === 'haut' ? +1 : -1);
+      const horiz = hMag * (hDir === 'droite' ? +1 : -1);
+
+      function calcClicks(errorCm){
+        const raw = errorCm / cmParClick;          // nb de clics (signe = sens de l'erreur)
+        const rounded = Math.round(Math.abs(raw)); // nb de clics à appliquer (positif)
+        const exactAbs = Math.abs(raw);
+        return {raw, rounded, exactAbs};
+      }
+
+      const v = calcClicks(vert);
+      const h = calcClicks(horiz);
+
+      // Déterminer consignes de rotation des molettes (corrigé selon ta demande)
+      // Hauteur : impact trop haut => Tourner la tourelle UP/DOWN vers la droite (horaire) pour descendre le tir. Trop bas => tourner la tourelle UP/DOWN vers la gauche (antihoraire)pour remonter le tir.
+      let vDirCorr = null;
+      if(vert > 0){
+        vDirCorr = "tourner la molette de hauteur UP/DOWN vers la droite (sens horaire)";
+      } else if(vert < 0){
+        vDirCorr = "tourner la molette de hauteur UP/DOWN vers la gauche (sens antihoraire)";
+      }
+
+      // Dérive : impact trop à gauche => Tourner la tourelle RIGHT/LEFT vers la gauche (dévisser) pour ramener l'impact à droite.
+      //          impact trop à droite => Tourner la tourelle RIGHT/LEFT vers la droite (visser) pour ramener l'impact à gauche.
+      let hDirCorr = null;
+      if(horiz > 0){
+        hDirCorr = "tourner la molette de dérive RIGHT/LEFT vers la droite (sens horaire)";
+      } else if(horiz < 0){
+        hDirCorr = "tourner la molette de dérive RIGHT/LEFT vers la gauche (sens antihoraire)";
+      }
+
+      
+      // Message
+      let msg = "";
+      if(v.rounded === 0 && h.rounded === 0){
+        msg += "✅ Aucun ajustement n’est nécessaire.";
+      } else {
+        if(v.rounded > 0){
+          msg += "Vertical (ÉLÉVATION): " + v.rounded + " clic" + (v.rounded>1?"s":"") + " — " + vDirCorr + " ";
+          msg += "(exact : " + v.exactAbs.toFixed(2) + ").\n\n";
+        } else {
+          msg += "Vertical : Aucun ajustement.\n\n";
+        }
+        if(h.rounded > 0){
+          msg += "Horizontal (DÉRIVE) : " + h.rounded + " clic" + (h.rounded>1?"s":"") + " — " + hDirCorr + " ";
+          msg += "(exact : " + h.exactAbs.toFixed(2) + ").\n\n";
+        } else {
+          msg += "Horizontal : Aucun ajustement.";
+        }
+      }
+
+      const detail = `\n\n\Détail :\n\n• Valeur d’un clic à ${dist} m ≈ ${cmParClick.toFixed(3)} cm\n\n• Écart vertical saisi : ${Math.abs(vert)} cm (${vDir})\n• Écart horizontal saisi : ${Math.abs(horiz)} cm (${hDir})`;
+      out.textContent = msg + detail;
+    }
+  </script>
+</body>
+</html>
